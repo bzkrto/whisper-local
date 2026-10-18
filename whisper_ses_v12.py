@@ -627,6 +627,7 @@ class OpenAICompatLLM:
 
 
 class OllamaLLM(OpenAICompatLLM):
+    supports_background_cancel = True
     """Ollama'nın yerel API'si: düşünme bütçesi yanıt tokenlarını tüketmesin."""
 
     def __init__(self, *args, context: int = 8192, gpu_layers=None, **kwargs):
@@ -659,8 +660,11 @@ class OllamaLLM(OpenAICompatLLM):
     def _chat_request(self,payload,stream=False):
         # Retry only a rejected allocation, never an already delivered response.
         for attempt in range(2):
+            cancelled=getattr(self,'_background_cancel',None)
+            if cancelled is not None and cancelled.is_set():raise InterruptedError('Arka plan işi yazılı isteğe öncelik verdi.')
             response=requests.post(self.chat_url,json=payload,headers=self.headers,
-                                   timeout=self.timeout,allow_redirects=False,**({'stream':True} if stream else {}))
+                                   timeout=(3,min(8,self.timeout)) if getattr(self,'_background_cancel',None) is not None else self.timeout,
+                                   allow_redirects=False,**({'stream':True} if stream else {}))
             with response:
                 error=response.text.lower() if response.status_code>=300 else ''
                 if (attempt==0 and payload['options'].get('num_gpu',0)>0 and
@@ -732,7 +736,41 @@ class OllamaLLM(OpenAICompatLLM):
         if self.last_metrics:
             print(f"⏱️ LLM sunucu süreleri (sn): {self.last_metrics}")
 
+    def _background_text(self,payload):
+        timeout_type=getattr(requests,'Timeout',None)
+        timeout_errors=(timeout_type,) if isinstance(timeout_type,type) and issubclass(timeout_type,Exception) else ()
+        try:return self._background_text_impl(payload)
+        except timeout_errors as exc:
+            raise InterruptedError('Arka plan modelinin ağ bekleme sınırı doldu; iş yeniden denenebilir.') from exc
+
+    def _background_text_impl(self,payload):
+        """Stream even structured generation, so a foreground waiter can abort it.
+
+        The existing format schema remains in the payload. Incomplete output is
+        never accepted. Only background calls get a bounded read timeout.
+        """
+        cancelled=self._background_cancel
+        if cancelled.is_set():raise InterruptedError('Arka plan işi yazılı isteğe öncelik verdi.')
+        payload['stream']=True;parts=[];length=0;complete=False
+        with self._chat_request(payload,stream=True) as response:
+            if response.status_code>=300:raise LLMError(f'Ollama HTTP {response.status_code}')
+            for raw in response.iter_lines(chunk_size=128,decode_unicode=False):
+                if cancelled.is_set():raise InterruptedError('Arka plan işi yazılı isteğe öncelik verdi.')
+                if not raw:continue
+                data=json.loads(raw)
+                part=self._content(data);parts.append(part);length+=len(part)
+                if length>50000:raise LLMError('Arka plan yanıtı boyut sınırını aştı.')
+                if data.get('done'):
+                    if data.get('done_reason')=='length':raise LLMError('Arka plan yanıtı token sınırında kesildi.')
+                    complete=True;self._record_metrics(data);break
+        if cancelled.is_set():raise InterruptedError('Arka plan işi yazılı isteğe öncelik verdi.')
+        text=''.join(parts)
+        if not complete or not text.strip():raise LLMError('Arka plan yanıtı tamamlanmadı.')
+        return text
+
     def chat(self, system_prompt, user_prompt, max_tokens=None, history=None):
+        if getattr(self,'_background_cancel',None) is not None:
+            return self._background_text(self._payload(system_prompt,user_prompt,max_tokens,True,history))
         with self._chat_request(self._payload(system_prompt,user_prompt,max_tokens,False,history)) as response:
             if response.status_code >= 300:
                 raise LLMError(f"Ollama HTTP {response.status_code}: {response.text[:300]}")
@@ -748,6 +786,7 @@ class OllamaLLM(OpenAICompatLLM):
         from whisper.core.structured import transport_schema
         payload['format'] = transport_schema(schema)
         payload['options']['temperature'] = 0
+        if getattr(self,'_background_cancel',None) is not None:return self._background_text(payload)
         with self._chat_request(payload) as response:
             if response.status_code >= 300:
                 raise LLMError(f'Ollama yapılandırılmış yanıt HTTP {response.status_code}: {response.text[:200]}')
@@ -2992,6 +3031,12 @@ class WhisperBrain:
             self.dialogue_context.record(command,result['response'])
             self._conversation_event('assistant',result['response'])
             return result
+        from whisper.core.research_status import status_question,answer as research_answer
+        if status_question(command):
+            result=research_answer(self)
+            self.dialogue_context.record(command,result['response'])
+            self._conversation_event('assistant',result['response'])
+            return result
         # One waiting request survives speech acknowledgements/background model calls.
         waiting_result = self._acquire_command_slot()
         if waiting_result is not None:
@@ -3813,7 +3858,7 @@ class WhisperBrain:
             return self.layers.result(command_issue)
 
         # 1) BASİT GÖREV: saat, tarih, hava durumu, hafıza sorgusu -> model/GPU kullanılmaz
-        hizli = self.tools.fast_answer(command)
+        hizli = None if social else self.tools.fast_answer(command)
         if hizli:
             print(f"⚡ Hızlı yanıt (model/GPU kullanılmadı)")
             print(f"🔊 Whisper ({time.time() - t0:.2f} sn): {hizli}")
@@ -4039,23 +4084,44 @@ class WhisperBrain:
             if not local_model(self.llm):
                 print('🧠 Bilgi işleme bekliyor: yerel LLM bağlı değil. Ollama uygulamasını açın.')
                 return None
+            from whisper.core.background import background_inference
             self._select_role_model('chat')
-            outcome=self.knowledge_processor.tick(self.llm, self.autonomous_research.stop_event)
-            if outcome:
-                print(f"🧠 Bilgi işleme: {outcome['status']} | kaynak {outcome.get('source_id','')} | {outcome.get('detail','bölüm '+str(outcome.get('part',0)))}")
-            if hasattr(self, 'profile_memory') and not self._foreground_waiting.is_set():
-                profile_result = self.profile_memory.tick(self.llm, self.autonomous_research.stop_event)
-                if profile_result:
-                    print(f"🧠 Profil işleme: {profile_result['status']}")
-                if self._foreground_waiting.is_set():
-                    return None
-            if (hasattr(self,'development_engine') and not self._foreground_waiting.is_set()
-                    and not self.autonomous_research.stop_event.is_set()):
-                self.development_engine.failures(self.autonomous_research)
-                development=self.development_engine.tick(self.llm,self.autonomous_research.stop_event)
-                if development:print('🧠 Gelişim taslağı:',development)
+            with background_inference(self,'knowledge',self.autonomous_research.stop_event) as cancelled:
+                outcome=self.knowledge_processor.tick(self.llm,cancelled)
+                if outcome:print(f"🧠 Bilgi işleme: {outcome['status']} | kaynak {outcome.get('source_id','')}")
+                if cancelled.is_set() or self._foreground_waiting.is_set():return outcome
+                if hasattr(self,'profile_memory'):
+                    self._background_phase='profile'
+                    profile_result=self.profile_memory.tick(self.llm,cancelled)
+                    if profile_result:print(f"🧠 Profil işleme: {profile_result['status']}")
+                if cancelled.is_set() or self._foreground_waiting.is_set():return outcome
+                if hasattr(self,'development_engine'):
+                    self._background_phase='proposal'
+                    self.development_engine.failures(self.autonomous_research)
+                    development=self.development_engine.tick(self.llm,cancelled)
+                    if development:print('🧠 Gelişim taslağı:',development)
             return outcome
         finally:
+            self._command_lock.release()
+
+    def _develop_code_idle(self):
+        if self._background_models_paused or self._foreground_waiting.is_set() or not self._command_lock.acquire(False):return None
+        previous=self.llm
+        try:
+            # A role switch unloads the chat model. Never do that for an empty,
+            # disabled or not-yet-due coding queue.
+            if not self.self_development.ready():return None
+            if self.llm is None:self._ensure_llm()
+            if previous is None:previous=self.llm
+            self._select_role_model('code')
+            from whisper.core.background import background_inference
+            with background_inference(self,'code',self._development_stop) as cancelled:
+                outcome=self.self_development.tick(self.llm,self._knowledge_context,cancelled,
+                                                   knowledge_provider=self.knowledge_processor.recall)
+            if outcome:print('🛠️ Otomatik kod geliştirme:',outcome)
+            return outcome
+        finally:
+            self.llm=previous
             self._command_lock.release()
 
     def start_services(self):
@@ -4067,20 +4133,8 @@ class WhisperBrain:
             self._development_stop.clear()
             def develop():
                 while not self._development_stop.wait(30):
-                    if self._background_models_paused or self._foreground_waiting.is_set() or not self._command_lock.acquire(False): continue
-                    previous=self.llm
-                    try:
-                        if self.llm is None: self._ensure_llm()
-                        if previous is None: previous=self.llm
-                        self._select_role_model('code')
-                        outcome=self.self_development.tick(self.llm,self._knowledge_context,self._development_stop,
-                                                           knowledge_provider=self.knowledge_processor.recall)
-                        if outcome: print('🛠️ Otomatik kod geliştirme:',outcome)
-                    except Exception as exc:
-                        print('Otomatik geliştirme:',type(exc).__name__)
-                    finally:
-                        self.llm=previous
-                        self._command_lock.release()
+                    try:self._develop_code_idle()
+                    except Exception as exc:print('Otomatik geliştirme:',type(exc).__name__)
             self._development_thread=threading.Thread(target=develop,daemon=True)
             self._development_thread.start()
         # Acquaintance starts only when explicitly requested, never at startup.

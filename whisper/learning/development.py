@@ -91,6 +91,11 @@ class DevelopmentEngine:
             with self.connect() as db:
                 db.execute("UPDATE development_jobs SET state='draft',proposal=?,error='' WHERE source_id=? AND part=?",(json.dumps(proposal,ensure_ascii=False),sid,part))
             return {'status':'draft','source_id':sid,'part':part}
+        except InterruptedError as exc:
+            with self.connect() as db:
+                db.execute("UPDATE development_jobs SET state='pending',error='',due=0,attempts=max(0,attempts-1) WHERE source_id=? AND part=?",(sid,part))
+                db.execute("UPDATE development_meta SET value=? WHERE key='next_analysis'",(self.clock()+30,))
+            return {'status':'cancelled','source_id':sid,'detail':str(exc)[:240]}
         except Exception as exc:
             with self.connect() as db:
                 attempts=db.execute('SELECT attempts FROM development_jobs WHERE source_id=? AND part=?',(sid,part)).fetchone()[0]

@@ -77,8 +77,10 @@ class FocusTests(unittest.TestCase):
         self.card(FOCUS_TOPICS['agent'])
         def answer(*a,**k):self.stop.set();return json.dumps(self.proposal())
         self.model.chat.side_effect=answer
-        self.assertEqual(self.engine.tick(self.model,self.stop)['status'],'error')
+        self.assertEqual(self.engine.tick(self.model,self.stop)['status'],'cancelled')
         with self.engine.connect() as db:self.assertEqual(db.execute("SELECT count(*) FROM development_jobs WHERE state='draft'").fetchone()[0],0)
+        with self.engine.connect() as db:
+            self.assertEqual(db.execute('SELECT state,attempts FROM development_jobs').fetchone(),('pending',0))
     def test_invalid_reply_retry_bounded_and_restart_keeps_backoff(self):
         self.card(FOCUS_TOPICS['memory']);self.model.chat.return_value='invalid'
         self.assertEqual(self.engine.tick(self.model,self.stop)['status'],'error')

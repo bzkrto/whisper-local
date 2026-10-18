@@ -56,6 +56,15 @@ class SelfDevelopment:
             goal += '\nKabul ölçütleri: ' + '; '.join(t['input'] + ' -> ' + t['expected'] for t in proposal['acceptance_tests'])
             self.enqueue(goal[:1200], 'source:' + str(source) + ':' + str(part))
 
+    def ready(self):
+        """Queue preflight before any model selection; ingestion is idempotent."""
+        if not self.enabled():return False
+        self.ingest()
+        with self.connect() as db:
+            due=float(db.execute("SELECT value FROM self_development_settings WHERE key='next_run'").fetchone()[0])
+            if due>self.clock() or db.execute("SELECT 1 FROM self_development_jobs WHERE state='restart_required'").fetchone():return False
+            return db.execute("SELECT 1 FROM self_development_jobs WHERE state IN ('pending','staged','blocked','testing','failed') AND attempts<3 LIMIT 1").fetchone() is not None
+
     def tick(self, model, knowledge=(), cancelled=None, interval=600, knowledge_provider=None):
         if not self.enabled() or not local_model(model) or (cancelled and cancelled.is_set()) or not self.lock.acquire(False):
             return None
@@ -98,6 +107,14 @@ class SelfDevelopment:
             state='restart_required' if applied.get('live_code_changed') else ('failed' if applied['status']=='blocked' else applied['status'])
             self._state(jid,state,applied['response'])
             return {**applied, 'job_id':jid}
+        except InterruptedError as exc:
+            if job:
+                with self.connect() as db:
+                    current=db.execute('SELECT proposal_id FROM self_development_jobs WHERE id=?',(job[0],)).fetchone()[0]
+                    db.execute('UPDATE self_development_jobs SET state=?,attempts=?,detail=?,updated=? WHERE id=?',
+                               ('staged' if current else 'pending',job[5],str(exc)[:240],self.clock(),job[0]))
+                    db.execute("UPDATE self_development_settings SET value=? WHERE key='next_run'",(str(self.clock()+30),))
+            return {'status':'cancelled','response':str(exc)[:240]}
         except Exception as exc:
             if job: self._state(job[0], 'failed', str(exc))
             return {'status':'error', 'response':str(exc)[:500]}

@@ -93,7 +93,7 @@ class KnowledgeProcessor:
                     'Özet 20–1200 karakter, kavramlar en fazla 8, iddialar en fazla 4. Her alıntı 20–300 karakter. '
                     'Yalnız verilen bölümü kullan; bu bir doğruluk veya beceri sınaması değildir.',
                     json.dumps({'source_id':sid,'part':part,'excerpt':excerpt},ensure_ascii=False),max_tokens=1800)
-                if cancelled and cancelled.is_set():raise ValueError('İşleme iptal edildi.')
+                if cancelled and cancelled.is_set():raise InterruptedError('İşleme iptal edildi.')
                 from ..core.structured import parse_object
                 data=parse_object(raw)
                 if not isinstance(data,dict) or set(data) not in ({'summary','concepts','claims'},{'summary','concepts','claims','applications'}) or not isinstance(data['summary'],str) or not 20<=len(data['summary'])<=1200:
@@ -121,6 +121,11 @@ class KnowledgeProcessor:
                 remaining=db.execute("SELECT count(*) FROM knowledge_chunks WHERE source_id=? AND state!='done'",(sid,)).fetchone()[0]
                 db.execute("UPDATE knowledge_jobs SET state=?,error='' WHERE source_id=?",('pending' if remaining else 'done',sid))
             return {'status':'processed','source_id':sid,'part':part,'remaining_parts':remaining}
+        except InterruptedError as exc:
+            with self.connect() as db:
+                db.execute("UPDATE knowledge_chunks SET state='pending',due=0,error='' WHERE source_id=? AND part=?",(sid,part))
+                db.execute("UPDATE knowledge_jobs SET state='pending',due=0,error='' WHERE source_id=?",(sid,))
+            return {'status':'cancelled','source_id':sid,'detail':str(exc)[:240]}
         except Exception as exc:
             with self.connect() as db:
                 db.execute("UPDATE knowledge_chunks SET state='error',due=?,error=? WHERE source_id=? AND part=?",(self.clock()+1800,str(exc)[:240],sid,part))

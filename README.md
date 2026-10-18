@@ -1,7 +1,8 @@
-# Whisper Astra — V33.1 araştırma ve çekirdek geliştirme
+# Whisper Astra — V33.2 araştırma durumu ve yazılı sohbet
 
 Yerel Ollama modeliyle Türkçe sesli/yazılı asistan, kaynaklı hafıza ve test edilen otomatik kod geliştirme.
 
+- [V33.2 durum sorguları ve arka plan önceliği](V33_2_YAZILI_ONCELIK_VE_DURUM.md)
 - [V33.1 yazılı kullanım ve araştırma odağı](V33_1_ARASTIRMA_VE_CEKIRDEK.md)
 - [V33 diyalog ve bağlam değişiklikleri](V33_DIYALOG_VE_BAGLAM.md)
 - [V32.13 Windows güncellemesi ve sürüm notları](https://github.com/bzkrto/whisper-local/releases/tag/v32.13-astra)
@@ -19,7 +20,7 @@ Geliştirme modu ses/STT yüklemeden tek kurulu yerel modelle çalışır. Siber
 
 ## Doğrulama
 
-V33.1 için `python -m unittest discover -s tests` ile 535 test geçti; atlanan test yok. V33'ün iki ayrı 20 turlu konuşma testi korunur. Ek testler; 500'den büyük kaynak birikiminde konu seçimini, eski kartların taslak kuyruğuna geçişini, mantıksal araştırma sırasını ve ses yüklemeyen yazılı başlatıcıyı denetler. Model yanıtları taklittir; gerçek modelin mantıksal başarı oranı ve Windows arayüzü bu çalışmada ölçülmedi.
+V33.2 için `python -m unittest discover -s tests` ile 548 test geçti; atlanan yok. Yeni testler durum sorgusunun model kilidini beklememesini, boş kod kuyruğunda model değiştirilmemesini ve devam eden Ollama kart üretiminin yazılı isteğe öncelik vermesini denetler. V33'ün iki ayrı 20 turlu konuşma testi korunur. Ağ/model yanıtları testlerde taklittir; gerçek Windows/GPU gecikmesi ölçülmedi.
 
 V32.13 tabanında 510 test ayrıca ağsız Docker ortamında geçmişti. V33 için Docker testi bu çalışmada tekrarlanmadı.
 
