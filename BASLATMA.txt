@@ -1,0 +1,53 @@
+WHISPER V32.13 — SEÇİLEN ÜCRETSİZ REFERANS SES
+
+1. Whisper'ı kapat ve klasörünü yedekle.
+2. Güncelleme ZIP'inin TÜM içeriğini mevcut whisper astra klasörünün üzerine çıkar.
+   .venv klasörünü ve whisper_memory.db dosyanı koru.
+3. WHISPER_SES_TESTI.cmd dosyasını aç.
+   Önceden indirilen 3,2 GB model dosyaları doğrulanıp korunur.
+   V32.11 kurulumu tamamlandıysa bu güncelleme ses modeli veya PyTorch/CUDA indirmez.
+   Daha eski kurulumlarda önce V32.11 için gereken çalışma paketi yükseltmesi tamamlanır.
+   İlk kez kuruyorsan ayrıca yaklaşık 3,2 GB model indirilir.
+   Önceden kaydedilmiş referans bulunamazsa ElevenLabs'ten indirdiğin orijinal MP3/WAV kaydını seç.
+   API anahtarı veya ücretli ses aboneliği gerekmez. Referans yalnız bilgisayarında kalır.
+4. Testte Enter ve yüzde 25 içeren kısa cümleyi dinle. Ardından WHISPER_BASLAT.cmd ile aç.
+   İlk satır 32.13-single-model-security-development, ses motoru Chatterbox V3 olmalı.
+
+Model ve referans mikrofon açılmadan hazırlanır. Durum satırlarında GPU/CPU seçimi görünür.
+RTX 50 serisi için PyTorch 2.8.0 / CUDA 12.8 çalışma paketi kullanılır (güncel NVIDIA sürücüsü gerekir).
+Ses ve tanıma önce yüklenir. Kalan GPU belleğinin bir bölümü Ollama ile paylaşılır.
+1,5 GB güvenlik payı bırakılarak en fazla 8 GPU katmanı ayrılır; kalan katmanlar RAM/CPU'dadır.
+Ollama bağlamı bu profilde en fazla 2048 tokendir. Bellek yetmezse model CPU ile yeniden denenir.
+Bu bellek bütçesi GPU hızı garantisi değildir; başlangıçta ayrılan katman sayısı gösterilir.
+Ses GPU'da açılamazsa neden yazılır; aynı ses CPU'da denenir ve Ollama GPU kısıtı kaldırılır.
+Otomatik ses GPU seçimi için en az 6 GB boş GPU belleği gerekir.
+CPU üretimi yavaştır; bu bulutta Windows/GPU hızı ölçülemedi.
+Ses testinde 'hazır: cuda' görmelisin. Hâlâ CPU yazarsa WHISPER_GPU_KONTROL.cmd aç ve
+oluşan WHISPER_GPU_RAPORU.txt dosyasını gönder. Bu kontrol model veya kişisel kayıt yüklemez.
+
+Başka bir kayıt seçmek için: Whisper kapalıyken WHISPER_SES_KAYDI.cmd.
+Seçilen ses kurulumunu onarmak için: Whisper kapalıyken WHISPER_SES_ONAR.cmd.
+Mikrofonu ayrı denemek için: WHISPER_MIKROFON_TESTI.cmd.
+Dosya ve kurulum kontrolü: WHISPER_KONTROL.cmd (indirme veya mikrofon açmaz).
+
+Yalnız yazı arayüzü:
+.\.venv\Scripts\python.exe .\whisper_ses_v12.py --gui --model qwen3:8b --tts none --enable-tools --web
+
+Ses modeli ana .venv'ye kurulmaz; LOCALAPPDATA/WhisperAstra/chatterbox-v3 altında ayrıdır.
+Bu sürümde normal başlatıcı eski Piper veya XTTS sesine otomatik geçmez.
+
+V32.12: Basit selamlaşma ve “Ne yapıyorsun?” gibi tek başına sohbet cümleleri uzun araç
+planlayıcısına gönderilmez. Bekleyen işlem soruları ve karma komutlar normal planlamayı kullanır.
+Basit sohbette kısa hafıza/son konuşma bağlamı korunur; araç envanteri ve kaynak metinleri eklenmez.
+Sayılar, ondalık değerler, yüzdeler ve tarihler seslendirme öncesi Türkçe yazıya çevrilir.
+Enter ses motoruna “entır” olarak gönderilir; ekrandaki metin değiştirilmez. Uzun metinler
+220 karakterlik parçalara ayrılır. Aynı ses modeli kullanıldığı için tüm telaffuz hatalarının
+giderildiği iddia edilmez. Hatalı kalan kelimeyi ekrandaki cümlesiyle birlikte bildir.
+
+V32.13 — hızlı geliştirme oturumu:
+Normal Whisper penceresini kapat, Docker Desktop (Linux) ve Ollama açıkken
+WHISPER_GELISIM_BASLAT.cmd dosyasını aç. Bu mod ses/STT yüklemeden tek yerel modelle
+araştırma -> bilgi kartı -> kod taslağı -> Docker testi -> yedekli uygulama akışını yürütür.
+Eski/eksik Docker test imajı ilk açılışta internetten yenilenir. Yeni ses/LLM indirilmez.
+Test edilmiş güncelleme sonrası yeni Python süreciyle otomatik devam edilir. Ctrl+C durdurur.
+Durum: WHISPER_GELISIM_RAPORU.json. Ayrıntılar: V32_13_GELISIM_REHBERI.md.

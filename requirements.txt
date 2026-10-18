@@ -1,0 +1,22 @@
+# Windows desktop baseline; GPU/CUDA components require machine-specific setup.
+numpy
+scipy
+requests
+sounddevice
+SpeechRecognition
+faster-whisper
+edge-tts
+google-genai
+ddgs
+pyautogui
+Pillow
+pyperclip
+psutil
+pyttsx3
+pypdf>=5,<7
+python-docx
+reportlab
+pycaw; sys_platform == 'win32'
+comtypes; sys_platform == 'win32'
+
+piper-tts==1.8.0

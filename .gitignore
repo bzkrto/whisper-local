@@ -1,7 +1,40 @@
+# Python and local environments
 .venv/
 venv/
 __pycache__/
+*.py[cod]
+.pytest_cache/
+.cache/
+
+# Personal memory, credentials and device profiles
+*.db
+*.db-*
+*.db.*
+*.sqlite
+*.sqlite3
+*.bak
+.env
+.env.*
+!.env.example
+*.dpapi
+mic_config.json
+voice_profile.json
+*.wav
+*.mp3
+
+# Local model weights and generated work
+models/
 *.gguf
 *.pt
+*.pth
 *.bin
-.cache/
+*.onnx
+*.safetensors
+raporlar/
+uretilen_kodlar/
+iyilestirme_taslaklari/
+*.log
+WHISPER_GPU_RAPORU.txt
+WHISPER_GELISIM_RAPORU.json
+.whisper-*.lock
+.whisper-buildx/
