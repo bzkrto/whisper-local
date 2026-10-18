@@ -17,15 +17,28 @@ class Route:
     role: str = 'chat'
 
 def conversational_turn(text):
-    """Only standalone social turns; mixed requests still use semantic planning."""
+    """Recognize text dialogue conservatively; this never grants tool authority.
+
+    Explicit actions win over conversation markers in mixed requests. Uncertain
+    commands continue through the existing semantic planner and validation.
+    """
     text = re.sub(r'[.!?,]+', ' ', fold(text))
     text = re.sub(r'\s+', ' ', text).strip()
-    return bool(re.fullmatch(
+    expand=re.fullmatch(r'(?:biraz|biraz daha|daha|bunu biraz|konuyu biraz) (?:acar misin|acabilir misin|aciklar misin|anlatir misin)',text)
+    if expand:return True
+    actions=r'\b(?:ac|acar|acabilir|acalim|acman\w*|acilmas\w*|cal|baslat\w*|calistir\w*|hazirla\w*|getir\w*|ayarla\w*|kaydet\w*|olustur\w*|goster\w*|donustur\w*|aktar\w*|arastir|arastirir|arastirabilir|oku|okur|ogren|izle|takip|yaz|yazar|yazabilir|yazman\w*|kodla\w*|yap|yapar|yapabilir|yapman\w*|sil\w*|gonder\w*|yukle\w*|indir\w*|surdur\w*|basla\w*|durdur\w*|kapat\w*|kis|artir\w*|tikla\w*|kur|not al)\b'
+    if re.search(actions,text) or re.search(r'\bdevam (?:et|edelim|edebilir\w*)\b',text):return False
+    if re.fullmatch(
         r'(?:(?:hey )?whisper )?(?:merhaba|selam|selamlar|nasilsin|nasilsiniz|'
         r'ne haber|naber|ne yapiyorsun|neler yapiyorsun|ne yapiyorsunuz|'
         r'beni duyuyor musun|sesim geliyor mu|orada misin|tesekkur ederim|'
         r'tesekkurler|sag ol|gunaydin|iyi aksamlar|iyi geceler|'
-        r'seninle sohbet etmek istiyorum|biraz sohbet edelim)', text))
+        r'seninle sohbet etmek istiyorum|biraz sohbet edelim|peki|tamam|evet|hayir|anladim|anlamadim|olmadi|haklisin)', text):return True
+    if re.search(r'\b(?:bugun|duyurdu|guncel|haber\w*|fiyat\w*|hava|internette|webde|kac tl)\b',text):return False
+    if re.search(r'\b(?:konus\w*|konu\w*|kastet\w*|duzelt\w*|karsilastir\w*|acikla\w*|ozetle\w*|anlat\w*|ornek|kisaca|daha kisa|ilgilen\w*|dusun\w*|hatirliyor\w*|donelim)\b',text):return True
+    # Source/research definitions retain the existing source-grounded route.
+    if re.search(r'\barastirma\b',text):return False
+    return bool(re.search(r'\b(?:ne|nedir|neden|nasil|hangi\w*|kim\w*|mi|mu|misin|musun|miyim|var|degil|olsun)\b',text))
 
 class ReasoningRouter:
     """Decides the execution path; does not pretend to expose model thoughts."""

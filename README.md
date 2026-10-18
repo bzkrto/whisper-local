@@ -1,8 +1,9 @@
-# Whisper Astra — V32.13
+# Whisper Astra — V33 geliştirme dalı
 
 Yerel Ollama modeliyle Türkçe sesli/yazılı asistan, kaynaklı hafıza ve test edilen otomatik kod geliştirme.
 
-- [Windows güncellemesi ve sürüm notları](https://github.com/bzkrto/whisper-local/releases/tag/v32.13-astra)
+- [V33 diyalog ve bağlam değişiklikleri](V33_DIYALOG_VE_BAGLAM.md)
+- [V32.13 Windows güncellemesi ve sürüm notları](https://github.com/bzkrto/whisper-local/releases/tag/v32.13-astra)
 - [Başlatma adımları](BASLATMA.txt)
 - [Kurulum](WHISPER_KURULUM.md)
 - [Araştırma ve otomatik kod geliştirme rehberi](V32_13_GELISIM_REHBERI.md)
@@ -17,6 +18,8 @@ Geliştirme modu ses/STT yüklemeden tek kurulu yerel modelle çalışır. Siber
 
 ## Doğrulama
 
-510 test normal Python ortamında ve ağsız, salt okunur, ayrı kullanıcıyla 2 CPU/2 GB RAM altında çalışan Docker konteynerinde geçti. Küçük ayrı projede gerçek yerel kod modeliyle taslak, test ve yedekli uygulama doğrulandı. Windows/GPU hızı bu CPU bulutunda ölçülmedi.
+V33 için `python -m unittest discover -s tests` ile 526 test geçti; atlanan test yok. Yeni 16 test; iki ayrı 20 turlu konuşmanın HTTP mesajlarını, iptal akışını, oturum sınırını ve bağlam bütçesini denetler. Model yanıtları taklittir; gerçek modelin Türkçe yanıt kalitesi ve Windows/GPU/ses performansı bu değişiklik için ölçülmedi.
+
+V32.13 tabanında 510 test ayrıca ağsız Docker ortamında geçmişti. V33 için Docker testi bu çalışmada tekrarlanmadı.
 
 Veritabanları, mikrofon/ses profilleri, kişisel kayıtlar, API anahtarları, model ağırlıkları ve sanal ortamlar kaynak dağıtımına dahil değildir. Bunlar mevcut bilgisayarda korunmalıdır. Model/yazılım lisansları ilgili paket belgelerindedir.

@@ -1,5 +1,5 @@
 {
-  "version": "32.13-single-model-security-development",
+  "version": "33.0-dialogue-context",
   "files": {
     "WHISPER_BASLAT.cmd": "a1bbbe3354cb163a9fa6ea8670744f4889aa195eb1cf9bfe8e40c8ed27817ccd",
     "WHISPER_KONTROL.cmd": "8d9756451f23934f78340d76b7d4cd31a3fea7a8486cd35833697c1bd522cfb7",
@@ -35,7 +35,7 @@
     "whisper/core/goal_brain.py": "bab10e9ee33e3c3e2b64f4b96bce56580e3fe4ca26d176000282c2dbada0bf6e",
     "whisper/core/planner.py": "2972a668d9479e758e05002d2338dad9b4efd6d890bce066c9870c93278389f6",
     "whisper/core/production.py": "97788fdb0cecc2fa212d292addc3702a312b163eb4733a8e194df4373e6bf276",
-    "whisper/core/reasoning.py": "f8cf7584f2f7426eeea369c94f891594cb67351f33cbf01835e7452d226f1e27",
+    "whisper/core/reasoning.py": "9e8482fece3f07fb225d618821f68f4abd56418c08842512be1fc8bc132f0e5c",
     "whisper/learning/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "whisper/learning/experience.py": "b2bc1038bf3e04f77a18be465040e8cb0b9764ebf10dfba95571bc5a4eb4ade3",
     "whisper/learning/improvement_engine.py": "ff1849d97c6a9b9fabbae42c8b452b7d7e5a4572c96dca15d42b0343f964605c",
@@ -70,7 +70,7 @@
     "whisper/voice/turn_control.py": "40594a816cb815da27ccd9d2e92db7bb7090671275c1fc109a3a52f33b5e35c2",
     "whisper_bootstrap.py": "fe0bbbc4fee449110bb8461747115b9dff4be5e099eb2a0a49922b20a9dec989",
     "whisper_gui.py": "0c65a886e9dc2e6b1bc4188a4a4fcd2f0f082e3c63dd663cb1307ce9a1f57f61",
-    "whisper_ses_v12.py": "a90b176ba8e406273b10bcd7015c29c931c898ff557186349c6603097e7c20e9",
+    "whisper_ses_v12.py": "2fea998bf17e4d23befbabb14d1edd45d9cd2e156d3c89526ec25a5bbfaff1ab",
     "whisper/core/dialogue.py": "b5380226fc51e48a1ab2e45a68b2d939570e378171a91bd41cd2082483323a93",
     "tests/test_dialogue.py": "666e3fb10b3ea5e88b8f6a84d993338f53202501d108f205f9048af0b01eda89",
     "whisper/learning/engine.py": "f09409f36700d556a0733499e4e81ebe98e6b9088bd8415dc7481099840ac750",
@@ -155,6 +155,9 @@
     "whisper/learning/accelerated.py": "34ec4b8f2e109699129248887f5d82d1e56ff2b5d48c0867c3cada292ac2e32c",
     "WHISPER_GELISIM_BASLAT.cmd": "93a49e5e1549296b91f584ee6fa05e02a050dcd13c74bde86471bc7f6ae17800",
     "tests/test_accelerated_v3213.py": "e65ff88cd75c7248b519cc130c155657ea0e966a344e805ccee83288a69fb5f4",
-    "V32_13_GELISIM_REHBERI.md": "2675c0bdc1c74d5d18778fba1810c707c51735ff369edd5395ae0583275184bf"
+    "V32_13_GELISIM_REHBERI.md": "2675c0bdc1c74d5d18778fba1810c707c51735ff369edd5395ae0583275184bf",
+    "whisper/core/conversation.py": "ad52c89cd8b59261b5e1ae8b445f592fe8027592814f3cc517fe6e14d77cce2b",
+    "tests/test_dialogue_context_v33.py": "acdd6ce0e84169129724af69cf08727fe6a50f250db1522f20789e72c783c8a9",
+    "V33_DIYALOG_VE_BAGLAM.md": "e70295b0b872efb8f8c3903d69f9fa81aafbb5e0ee232b6a73446f30b55e0fc1"
   }
 }
