@@ -1,5 +1,5 @@
 {
-  "version": "33.2-responsive-research-status",
+  "version": "33.3-chat-first-routing",
   "files": {
     "WHISPER_BASLAT.cmd": "5365c5e815439b9f4b636546333470342c134168bcac98210c495e7f4c54f376",
     "WHISPER_KONTROL.cmd": "8d9756451f23934f78340d76b7d4cd31a3fea7a8486cd35833697c1bd522cfb7",
@@ -31,11 +31,11 @@
     "whisper/ai/router.py": "43d1c9e0b5ce5f9923530c66ba9525c8f28c068012df5a1beae9bd0b315c516a",
     "whisper/common.py": "a6a6dc7f15f91325821ea484754fa2a31b4c4b2c98ac60326a8e95519d0628dd",
     "whisper/core/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "whisper/core/action_agent.py": "2b46963d16a16c032289c33e7880d49f7118d99bb9eae364c16e898d49eb85df",
+    "whisper/core/action_agent.py": "57797644389dff296da9f8f2bae1f4adc37b21911623e283a6ae030e6c97b75c",
     "whisper/core/goal_brain.py": "bab10e9ee33e3c3e2b64f4b96bce56580e3fe4ca26d176000282c2dbada0bf6e",
     "whisper/core/planner.py": "2972a668d9479e758e05002d2338dad9b4efd6d890bce066c9870c93278389f6",
     "whisper/core/production.py": "97788fdb0cecc2fa212d292addc3702a312b163eb4733a8e194df4373e6bf276",
-    "whisper/core/reasoning.py": "9e8482fece3f07fb225d618821f68f4abd56418c08842512be1fc8bc132f0e5c",
+    "whisper/core/reasoning.py": "ab1e53af8237ceb97e95d8ebbfd1babc4ccd7a31d8430a9fa78ea47a5b567cd6",
     "whisper/learning/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "whisper/learning/experience.py": "b2bc1038bf3e04f77a18be465040e8cb0b9764ebf10dfba95571bc5a4eb4ade3",
     "whisper/learning/improvement_engine.py": "ff1849d97c6a9b9fabbae42c8b452b7d7e5a4572c96dca15d42b0343f964605c",
@@ -70,7 +70,7 @@
     "whisper/voice/turn_control.py": "40594a816cb815da27ccd9d2e92db7bb7090671275c1fc109a3a52f33b5e35c2",
     "whisper_bootstrap.py": "b96f2e74828af698c4380886de6d871b8ebfee2236787f7f1b6352b4b807d662",
     "whisper_gui.py": "0c65a886e9dc2e6b1bc4188a4a4fcd2f0f082e3c63dd663cb1307ce9a1f57f61",
-    "whisper_ses_v12.py": "1739b1f67d3bdd2804c80422fcf7bb4084749ef5cefdf3d1e78da143b557e830",
+    "whisper_ses_v12.py": "c04f49d156c107b4e3671a152e9d9ec29ee1cefd44a8bc41e9a28814cac0f0b5",
     "whisper/core/dialogue.py": "b5380226fc51e48a1ab2e45a68b2d939570e378171a91bd41cd2082483323a93",
     "tests/test_dialogue.py": "666e3fb10b3ea5e88b8f6a84d993338f53202501d108f205f9048af0b01eda89",
     "whisper/learning/engine.py": "f09409f36700d556a0733499e4e81ebe98e6b9088bd8415dc7481099840ac750",
@@ -103,7 +103,7 @@
     "WHISPER_V27_NOTLARI.md": "a4c8863e1c46d09332f2c86eb822038dab378a7bd81985722795baaae5b2b07a",
     "whisper/core/structured.py": "a633486b7747227b98309651a6aaf276444f32247264e3c099364719639d155c",
     "whisper/core/task_brain.py": "aabb27ff98a17d0fe91471ee4cf8cb658717c697b1870f796c99248517eb4905",
-    "whisper/core/semantic_plan.py": "49db715a32beb93abdb6be0fc5df7f3be74521c2c8591913dd21129178b75739",
+    "whisper/core/semantic_plan.py": "305ba65de88d56851f21ba161b2cb1fb73b4dc1fb43015cca98a8c1cda5687d3",
     "tests/test_v28.py": "00422223338f547e5432d48997d372eb68e4e3614d3cedf830180903e3fcf315",
     "whisper/memory/profile_fusion.py": "28b56e66d2d670b36ad21d8c246e2df2207ea776cd82ed2c8167f1beca3c689e",
     "V28_MIMARI_VE_KURULUM.md": "778e2eba03eeebc91a1841741458e4eeb1d5753ad5063d19334a4c3395473d2a",
@@ -162,9 +162,14 @@
     "tests/test_research_core_v331.py": "914b566c2b04986cca38adb94478b5cc4dc202221e14526f442de19cf202844c",
     "tests/test_written_mode_v331.py": "e18b3820e0e38e6ee0650a69e32f30824162082622cfa2585dcc6fa8f7f6f220",
     "V33_1_ARASTIRMA_VE_CEKIRDEK.md": "a78d82c87ad9e20dfbfc9288b3ed86990d5f31e29fb539415aa34b9d5d419616",
-    "whisper/core/research_status.py": "dd1a387351dab31a9d45015a5aeb1f7b3910180b6c0e26f96272cfbc34c776e4",
+    "whisper/core/research_status.py": "a49346cd0b9fd5972ce72dbe0f22c7dc48efaadae3b37b74837dd882e5e42bae",
     "whisper/core/background.py": "8a6c29c9220d9e54f6629d88a990a2f10f29e461b6dc5e4acac892873f21d975",
     "tests/test_research_responsiveness_v332.py": "17d7413600c6dd6da8fd81eadf61d092133b84a218cc7ef3bb813b9a45b7bf0e",
-    "V33_2_YAZILI_ONCELIK_VE_DURUM.md": "905c33c338e060ad55e94a0b67a4e9dda5fbedae85b5e62a1ee8bbf8985a562d"
+    "V33_2_YAZILI_ONCELIK_VE_DURUM.md": "905c33c338e060ad55e94a0b67a4e9dda5fbedae85b5e62a1ee8bbf8985a562d",
+    "whisper/core/turn_routing.py": "de2d82596d30d8cc8e9053023b2f93d0bc5ecf39323a1bf5197afeb032909d92",
+    "tests/test_turn_routing_v333.py": "03fb2e68ee512c979f1de630971ed53e0fde5e7493e92ae5c05d6353295f8da8",
+    "scripts/evaluate_dialogue.py": "ec09a02de46d72444fea023562a014ea752c2dc0d8af09b6b2a4a43425545628",
+    "evaluations/v33_3_cpu_routing.json": "42e307ca4c07b37909231d434596fddcf0627459ab1794c838516edbcd6d68bb",
+    "V33_3_SOHBET_VE_EYLEM_AYRIMI.md": "d82783b039ee9a7ad7095881c07e36adf6c1ee41b0e8e7fcf60f2c080a64058c"
   }
 }

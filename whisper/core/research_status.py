@@ -9,7 +9,7 @@ def status_question(text):
     value=' '.join(re.findall(r'\w+',fold(text)))
     value=re.sub(r'^(?:whisper |reis |peki |su an |simdi )+', '',value)
     return bool(re.fullmatch(
-        r'(?:arastirma (?:yapiyor musun|yapiyor musunuz|ne durumda|durumu nedir|devam ediyor mu)|'
+        r'(?:arastirma (?:yapiyor musun|yapiyor musunuz|(?:su an )?ne durumda|durumu nedir|devam ediyor mu)|'
         r'(?:ne|neler|hangi konulari) arastiriyorsun|arastiriyor musun|'
         r'kendi kodunu (?:yaziyor|gelistiriyor) musun|kod yaziyor musun|kendini gelistiriyor musun)',value))
 
@@ -24,8 +24,9 @@ def snapshot(brain):
         topics=[r[0] for r in db.execute('SELECT topic FROM autonomous_topics ORDER BY id LIMIT 12')] if 'autonomous_topics' in tables else []
         sources=db.execute('SELECT count(*) FROM research_sources').fetchone()[0] if 'research_sources' in tables else 0
         latest=db.execute('SELECT query FROM research_sources ORDER BY id DESC LIMIT 1').fetchone() if sources else None
+        blocked=db.execute("SELECT detail FROM self_development_jobs WHERE state IN ('blocked','failed') AND detail!='' ORDER BY updated DESC,id DESC LIMIT 1").fetchone() if 'self_development_jobs' in tables else None
         data={'enabled':settings.get('enabled')=='1','profile':settings.get('research_profile','unknown'),
-              'sources':sources,'last_topic':latest[0] if latest else None,'knowledge':counts('knowledge_chunks'),'drafts':counts('development_jobs'),
+              'last_code_blocker':blocked[0][:400] if blocked else None,'sources':sources,'last_topic':latest[0] if latest else None,'knowledge':counts('knowledge_chunks'),'drafts':counts('development_jobs'),
               'code':counts('self_development_jobs'),'topics':topics}
     data.update(internet_available=bool(brain.cfg.internet),
                 phase=getattr(brain,'_background_phase',''),
@@ -55,6 +56,7 @@ def answer(brain):
     k=data['knowledge'];d=data['drafts'];c=data['code']
     text+=f"\nKayıtlı kaynak: {data['sources']}. Bilgi bölümleri: {k.get('done',0)} işlendi, {k.get('pending',0)} bekliyor, {k.get('running',0)} işlemde, {k.get('error',0)} hatalı."
     text+=f"\nGeliştirme taslağı: {d.get('draft',0)}. Kod işi: {sum(c.values())}; uygulanmış kod değişikliği: {c.get('active',0)+c.get('restart_required',0)}."
+    if data['last_code_blocker']:text+='\nSon kod geliştirme engeli: '+data['last_code_blocker']
     text+='\nBilgi kartı ve geliştirme taslağı, kodun değiştiği veya modelin eğitildiği anlamına gelmez.'
     return {'status':'success','response':text,'source':'KAYNAK_SISTEM','fast':True,'research_status':data,
             'route':{'target':'status','reason':'Kayıtlı araştırma ve geliştirme durumu'}}

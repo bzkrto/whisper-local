@@ -1,7 +1,8 @@
-# Whisper Astra — V33.2 araştırma durumu ve yazılı sohbet
+# Whisper Astra — V33.3 sohbet ve eylem ayrımı
 
 Yerel Ollama modeliyle Türkçe sesli/yazılı asistan, kaynaklı hafıza ve test edilen otomatik kod geliştirme.
 
+- [V33.3 yönlendirme düzeltmesi ve gerçek model denemesi](V33_3_SOHBET_VE_EYLEM_AYRIMI.md)
 - [V33.2 durum sorguları ve arka plan önceliği](V33_2_YAZILI_ONCELIK_VE_DURUM.md)
 - [V33.1 yazılı kullanım ve araştırma odağı](V33_1_ARASTIRMA_VE_CEKIRDEK.md)
 - [V33 diyalog ve bağlam değişiklikleri](V33_DIYALOG_VE_BAGLAM.md)
@@ -20,7 +21,9 @@ Geliştirme modu ses/STT yüklemeden tek kurulu yerel modelle çalışır. Siber
 
 ## Doğrulama
 
-V33.2 için `python -m unittest discover -s tests` ile 548 test geçti; atlanan yok. Yeni testler durum sorgusunun model kilidini beklememesini, boş kod kuyruğunda model değiştirilmemesini ve devam eden Ollama kart üretiminin yazılı isteğe öncelik vermesini denetler. V33'ün iki ayrı 20 turlu konuşma testi korunur. Ağ/model yanıtları testlerde taklittir; gerçek Windows/GPU gecikmesi ölçülmedi.
+V33.3 için `python -m unittest discover -s tests` ile 561 test geçti; atlanan yok. Yeni 13 test; konu adlarının sohbet olması, eski/bitmiş soruların yeni konuşmayı ele geçirmemesi, geçerli kısa yanıtların araç sorusunu tamamlaması ve bozuk planın reddini kapsar. Üç ayrı 20 turlu diyalog testi bulunur.
+
+Ek olarak gerçek Qwen2.5-Coder-1.5B/llama.cpp CPU ile sekiz mesajlık yönlendirme denemesinde sekiz sohbet isteği, sıfır araç planı ve sıfır araç çalıştırma gözlendi. [Deneme kaydı](evaluations/v33_3_cpu_routing.json) doğal Türkçe veya doğruluk başarı puanı değildir; yanıtlar yer yer geneldir. Kullanıcının Windows/Qwen3:8B ortamı burada sınanmadı.
 
 V32.13 tabanında 510 test ayrıca ağsız Docker ortamında geçmişti. V33 için Docker testi bu çalışmada tekrarlanmadı.
 
