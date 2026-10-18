@@ -59,10 +59,15 @@ class DevelopmentEngine:
         now=self.clock()
         with self.connect() as db:
             if db.execute("SELECT value FROM development_meta WHERE key='next_analysis'").fetchone()[0]>now:return None
-            cards=db.execute("SELECT k.source_id,k.part,k.card,s.query FROM knowledge_chunks k JOIN research_sources s ON s.id=k.source_id WHERE k.state='done' ORDER BY k.processed_at DESC LIMIT 200").fetchall()
-            for sid,part,raw,title in cards:
-                if track(title)!='general':
-                    db.execute("INSERT OR IGNORE INTO development_jobs(source_id,part,state) VALUES(?,?,'pending')",(sid,part))
+            # Discover only unseen, relevant cards. Re-reading the same latest
+            # 200 cards forever starves older work, even when those are finished.
+            db.create_function('research_track',1,track,deterministic=True)
+            db.execute("""INSERT OR IGNORE INTO development_jobs(source_id,part,state)
+                SELECT k.source_id,k.part,'pending' FROM knowledge_chunks k
+                JOIN research_sources s ON s.id=k.source_id
+                LEFT JOIN development_jobs j ON j.source_id=k.source_id AND j.part=k.part
+                WHERE k.state='done' AND j.source_id IS NULL AND research_track(s.query)!='general'
+                ORDER BY k.processed_at DESC,k.source_id,k.part LIMIT 200""")
             db.execute('BEGIN IMMEDIATE') if not db.in_transaction else None
             profile=db.execute("SELECT value FROM autonomous_settings WHERE key='research_profile'").fetchone() if db.execute("SELECT 1 FROM sqlite_master WHERE name='autonomous_settings'").fetchone() else None
             priority="CASE WHEN lower(s.query) LIKE '%security%' OR lower(s.query) LIKE '%siber%' OR lower(s.query) LIKE '%owasp%' OR lower(s.query) LIKE '%nist%' THEN 0 ELSE 1 END," if profile and profile[0]=='security' else ''
@@ -74,7 +79,7 @@ class DevelopmentEngine:
             failures=db.execute('SELECT experience_id,track FROM development_demands ORDER BY experience_id DESC LIMIT 5').fetchall()
         try:
             proposal=request(model,
-                'Whisper kişisel asistanı için uygulanabilir gelişim taslağı hazırla. Türkçe niyet, kısa yanıt bağlamı, kaynaklı hafıza ve araç sonucunu doğrulamayı önceliklendir. '
+                'Whisper kişisel asistanı için uygulanabilir gelişim taslağı hazırla. Türkçe niyet, çok turlu bağlam, öncül-sonuç tutarlılığı, kullanıcı düzeltmeleri, kaynaklı hafıza ve araç sonucunu doğrulamayı önceliklendir. '
                 'Siber güvenlik kartlarında güvenli kodlama, giriş doğrulama, bağımlılık güvenliği ve günlük analizini değerlendir. '
                 'Verilen bilgi kartındaki alıntılara dayan. Bu kart bağımsız doğrulanmış gerçek değildir. '
                 'Mevcut uygulamanın kaynak kodunu görmüyorsun; bir özelliğin kesinlikle eksik veya hatalı olduğunu iddia etme. '

@@ -375,7 +375,7 @@ class AutonomousResearch:
                 f'. Döngü aralığı: {interval} saniye. Kaynak başlıklarından keşfedilen konu: {discoveries}. Konular: ' + ', '.join(topics) + '\n' +
                 '\n'.join(f'{s} | kayıt {i} | {u} | {d}' for s, u, i, d in rows) +
                 ('\nSon arama hatası: ' + error[0] if error else '') +
-                f'\nAraştırma profili: {profile}. development profilinde 10 turun 8’i Türkçe bağlam, bilgi işleme, ajan ve derin öğrenmeye ayrılır (uygun kaynak varsa); 2 tur genel keşiftir. Siber güvenlikte resmî teknik kaynaklar kullanılır. Kayıtlı metinler bağımsız doğrulama değildir.')
+                f'\nAraştırma profili: {profile}. development profilinde 10 turun 8’i Türkçe bağlam, mantıksal tutarlılık, bilgi işleme, ajan ve derin öğrenmeye ayrılır (uygun kaynak varsa); 2 tur genel keşiftir. Siber güvenlikte resmî teknik kaynaklar kullanılır. Kayıtlı metinler bağımsız doğrulama değildir.')
 
     def set_profile(self, profile):
         if profile not in ('balanced','security','development'):

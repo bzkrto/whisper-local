@@ -21,11 +21,14 @@ def verify_package():
 
 def main(argv=None):
     argv = list(argv or [])
-    if any(arg not in ("--check-only", "--development", "--mobile", "--elevenlabs", "--reference", "--piper", "--test-voice") for arg in argv):
-        print("Kullanım: whisper_bootstrap.py [--check-only] [--development] [--mobile] [--test-voice] [--elevenlabs | --reference | --piper]")
+    if any(arg not in ("--check-only", "--text", "--development", "--mobile", "--elevenlabs", "--reference", "--piper", "--test-voice") for arg in argv):
+        print("Kullanım: whisper_bootstrap.py [--check-only] [--text | --development] [--mobile] [--test-voice] [--elevenlabs | --reference | --piper]")
         return 2
     if sum(flag in argv for flag in ('--elevenlabs','--reference','--piper'))>1:
         print('Tek bir ses modu seçin: --elevenlabs, --reference veya --piper.')
+        return 2
+    if '--text' in argv and any(flag in argv for flag in ('--development','--elevenlabs','--reference','--piper','--test-voice')):
+        print('Yazılı mod ile ses testi veya farklı çalışma modu birlikte seçilemez.')
         return 2
     os.chdir(ROOT)
     try:
@@ -34,6 +37,19 @@ def main(argv=None):
         print('Başlatma durduruldu:', exc)
         return 1
     print('WHISPER '+manifest['version']+' · Paket bütünlüğü doğrulandı.')
+    if '--text' in argv:
+        if '--check-only' in argv:
+            names=['numpy','requests','docx','reportlab','pypdf','psutil','tkinter','ddgs']
+            missing=[name for name in names if importlib.util.find_spec(name) is None]
+            print('Yazılı mod eksik modüller:',', '.join(missing) if missing else 'yok')
+            return 1 if missing else 0
+        print('Yazılı sohbet ve araştırma: mikrofon, STT ve ses modeli yüklenmez.',flush=True)
+        command=[sys.executable,str(ROOT/'whisper_ses_v12.py'),'--gui','--no-voice','--tts','none',
+                 '--model','qwen3:8b','--enable-tools','--enable-screen','--web',
+                 '--role-model','chat=qwen3:8b','--role-model','code=qwen2.5-coder:7b',
+                 '--role-model','vision=qwen3-vl:4b']
+        if '--mobile' in argv:command.append('--server')
+        return subprocess.call(command)
     if '--development' in argv:
         command=[sys.executable,'-m','whisper.learning.accelerated']
         if '--check-only' in argv:return subprocess.call(command+['--check-only'])

@@ -6,6 +6,7 @@ FOCUS_TOPICS = {
     'context': 'Türkçe NLP intent detection entity extraction multi turn dialogue context evaluation',
     'memory': 'RAG retrieval knowledge processing source grounded memory evaluation',
     'agent': 'LLM tool calling agent planning error reflection regression testing',
+    'reasoning': 'Logical reasoning premise conclusion contradiction consistency multi turn context evaluation',
     'deep_learning': 'Deep learning transformers fine tuning dataset evaluation overfitting',
 }
 FOCUS_SEEDS = [
@@ -15,21 +16,23 @@ FOCUS_SEEDS = [
     (FOCUS_TOPICS['context'], 'https://docs.ollama.com/capabilities/structured-outputs'),
     (FOCUS_TOPICS['memory'], 'https://docs.ollama.com/capabilities/embeddings'),
     (FOCUS_TOPICS['agent'], 'https://docs.ollama.com/capabilities/tool-calling'),
+    (FOCUS_TOPICS['reasoning'], 'https://arxiv.org/abs/2203.11171'),
     (FOCUS_TOPICS['deep_learning'], 'https://docs.pytorch.org/tutorials/beginner/transfer_learning_tutorial'),
 ]
 
 def track(topic):
     value=fold(topic)
     if any(term in value for term in ('cybersecurity','siber','security','owasp','nist','guvenlik')):return 'security'
-    groups=(('context',('turkce','dialogue','diyalog','intent','niyet','entity','baglam','context')),
+    groups=(('reasoning',('logical reasoning','mantiksal','oncul','celiski','tutarlilik','contradiction','consistency')),
+            ('context',('turkce','dialogue','diyalog','intent','niyet','entity','baglam','context')),
             ('memory',('retrieval','rag ','knowledge','hafiza','memory','bilgi isleme','embedding')),
             ('agent',('agent','ajan','tool calling','planning','planlama','reflection','regression','test','python','ollama')),
             ('deep_learning',('deep learning','derin ogrenme','fine tuning','transformer','dataset','overfitting')))
     return next((key for key,terms in groups if any(term in value for term in terms)), 'general')
 
 def target(number):
-    # Four focused turns, one exploratory turn. Context receives two focused turns.
-    return ('context','memory','agent','context','general','deep_learning','memory','agent','context','general')[number%10]
+    # Eight focused turns include logic/consistency; two retain general exploration.
+    return ('context','memory','agent','context','general','deep_learning','memory','agent','reasoning','general')[number%10]
 
 def priority_sql(column, number):
     wanted=target(number)

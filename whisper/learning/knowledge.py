@@ -60,16 +60,21 @@ class KnowledgeProcessor:
                 query=query.replace('SELECT source_id,part,body FROM knowledge_chunks',
                     'SELECT source_id,part,knowledge_chunks.body FROM knowledge_chunks JOIN research_sources ON research_sources.id=source_id')
                 order="CASE WHEN lower(research_sources.query) LIKE '%security%' OR lower(research_sources.query) LIKE '%siber%' OR lower(research_sources.query) LIKE '%owasp%' OR lower(research_sources.query) LIKE '%nist%' THEN 0 ELSE 1 END,source_id,part"
-            else:order='source_id,part'
-            rows=db.execute(query+' ORDER BY '+order+' LIMIT 500',params).fetchall()
-            if source_ids is None and profile and profile[0]=='development':
+            elif source_ids is None and profile and profile[0]=='development':
                 from .priorities import target,track
                 number=db.execute("SELECT value FROM knowledge_schedule WHERE key='processing_turn'").fetchone()[0]
                 wanted=target(number)
-                titles=dict(db.execute('SELECT id,query FROM research_sources'))
-                if wanted!='general':rows.sort(key=lambda x:track(titles.get(x[0],''))!=wanted)
-                if rows:db.execute("UPDATE knowledge_schedule SET value=value+1 WHERE key='processing_turn'")
-            row=rows[0] if rows else None
+                # Rank all eligible sources before LIMIT. A small result window
+                # must not hide a relevant topic behind hundreds of old chunks.
+                db.create_function('research_track',1,track,deterministic=True)
+                query=query.replace('SELECT source_id,part,body FROM knowledge_chunks',
+                    'SELECT source_id,part,knowledge_chunks.body FROM knowledge_chunks JOIN research_sources ON research_sources.id=source_id')
+                order='CASE WHEN research_track(research_sources.query)=? THEN 0 ELSE 1 END,source_id,part'
+                params.append(wanted)
+            else:order='source_id,part'
+            row=db.execute(query+' ORDER BY '+order+' LIMIT 1',params).fetchone()
+            if row and source_ids is None and profile and profile[0]=='development':
+                db.execute("UPDATE knowledge_schedule SET value=value+1 WHERE key='processing_turn'")
             if not row:return None
             sid,part,body=row
             db.execute("UPDATE knowledge_chunks SET state='running',due=? WHERE source_id=? AND part=?",(self.clock()+1800,sid,part))

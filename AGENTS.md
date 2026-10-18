@@ -2,6 +2,10 @@
 
 Bu depo Whisper Astra V32.13 sürümüdür. Ana dalı doğrudan değiştirme; **codex/dialogue-context-v33** dalında ilerle. Önce mevcut kodu ve testleri incele, çalışmayan davranışı kanıtlayan test yaz, ardından en küçük güvenli düzeltmeyi uygula.
 
+## Güncel çalışma odağı — V33.1
+
+Kullanıcı sesli konuşmayı uzun süreliğine askıya aldı. Araştırma, çekirdek kod, yazılı sohbet, çok turlu mantıksal bağlam ve tutarlılık değerlendirmesine odaklan. Açıkça yeniden istenmedikçe ses modeli, mikrofon veya ses kalitesi geliştirmesine dönme. Normal başlatıcı yazılı arayüz açar. Paketleri kişisel veri ve model ağırlıkları olmadan kayıpsız sıkıştır; kaynak kodu okunabilir tut. Aşağıdaki izin, test ve canlı işlem kuralları geçerlidir.
+
 ## Öncelik 1: Doğal Türkçe diyalog ve gerçek bağlam
 
 - Kullanıcı "Ne yapıyorsun?", "Biraz önce ne konuşuyorduk?", "Onu kastetmedim", "Biraz açar mısın?" gibi serbest ifadeler kurduğunda sohbet doğal ilerlesin. Kelime kalıbına göre hazır cevap verme. Mevcut `whisper/core/reasoning.py::conversational_turn` yalnızca dar bir ifade kümesini tanıyor: gerçek bir çok-turlu diyalog için sınıflandırmayı, güvenli araç yönlendirmeyi bozmadan yeniden değerlendir.
