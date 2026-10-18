@@ -63,7 +63,7 @@ class SelfDevelopment:
         with self.connect() as db:
             due=float(db.execute("SELECT value FROM self_development_settings WHERE key='next_run'").fetchone()[0])
             if due>self.clock() or db.execute("SELECT 1 FROM self_development_jobs WHERE state='restart_required'").fetchone():return False
-            return db.execute("SELECT 1 FROM self_development_jobs WHERE state IN ('pending','staged','blocked','testing','failed') AND attempts<3 LIMIT 1").fetchone() is not None
+            return db.execute("SELECT 1 FROM self_development_jobs WHERE state IN ('pending','staged','blocked','testing','failed') AND (attempts<3 OR (proposal_id IS NOT NULL AND state IN ('staged','blocked','testing'))) LIMIT 1").fetchone() is not None
 
     def tick(self, model, knowledge=(), cancelled=None, interval=600, knowledge_provider=None):
         if not self.enabled() or not local_model(model) or (cancelled and cancelled.is_set()) or not self.lock.acquire(False):
@@ -77,7 +77,7 @@ class SelfDevelopment:
                 if due > self.clock(): return None
                 # Applied code is activated at restart; never build another proposal on old imports.
                 if db.execute("SELECT 1 FROM self_development_jobs WHERE state='restart_required'").fetchone(): return None
-                job = db.execute("SELECT id,goal,proposal_id,state,detail,attempts FROM self_development_jobs WHERE state IN ('pending','staged','blocked','testing','failed') AND attempts<3 ORDER BY id LIMIT 1").fetchone()
+                job = db.execute("SELECT id,goal,proposal_id,state,detail,attempts FROM self_development_jobs WHERE state IN ('pending','staged','blocked','testing','failed') AND (attempts<3 OR (proposal_id IS NOT NULL AND state IN ('staged','blocked','testing'))) ORDER BY CASE WHEN state='blocked' THEN 1 ELSE 0 END,updated,id LIMIT 1").fetchone()
                 if not job: return None
                 db.execute("UPDATE self_development_settings SET value=? WHERE key='next_run'", (str(self.clock()+max(30,interval)),))
             jid, goal, proposal, state, detail, attempts = job

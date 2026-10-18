@@ -1,0 +1,45 @@
+{
+  "version": "33.4",
+  "code_generation_test_and_fixture_apply": {
+    "model": "qwen2.5-coder-1.5b-instruct-q4_k_m",
+    "seconds": 10.83,
+    "tests": "Taslak b5fdb6cce173: test passed. Çalışan kod değiştirilmedi.\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+    "applied": true,
+    "backup_valid": true,
+    "database_preserved": true,
+    "new_source": "def timeout_value(value):\n    if value is None or value == 'oops':\n        return 5\n    try:\n        value = int(value)\n        if value < 0:\n            value = 0\n        elif value > 60:\n            value = 60\n        return value\n    except ValueError:\n        return 5",
+    "scope": "Separate disposable fixture; not the Whisper checkout or user Windows installation.",
+    "test_functions": 1,
+    "input_cases": 5
+  },
+  "source_processing_and_draft": {
+    "model": "Qwen2.5-Coder-1.5B Instruct Q4_K_M",
+    "runtime": "Linux CPU llama.cpp",
+    "host_code_execution": false,
+    "application_reader_succeeded": false,
+    "application_reader_error": "gaierror: [Errno -3] Temporary failure in name resolution",
+    "fixture_transport": "Separate verified HTTPS request via session proxy; production reader remains blocked.",
+    "document": {
+      "url": "https://raw.githubusercontent.com/python/cpython/3.12/Doc/library/queue.rst",
+      "characters": 10237,
+      "partial": false
+    },
+    "knowledge": {
+      "status": "processed",
+      "source_id": 1,
+      "part": 0,
+      "remaining_parts": 1
+    },
+    "development_draft": {
+      "status": "draft",
+      "source_id": 1,
+      "part": 0
+    },
+    "seconds": 75.34
+  },
+  "limits": [
+    "These are separate probes, not one uninterrupted autonomous learning-to-application run.",
+    "No user Windows/Ollama/Qwen3:8B execution was performed.",
+    "No unrestricted shell, offensive network tool or model weight training was added."
+  ]
+}

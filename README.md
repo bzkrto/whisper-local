@@ -1,7 +1,8 @@
-# Whisper Astra — V33.3 sohbet ve eylem ayrımı
+# Whisper Astra — V33.4 araştırma kuyruğu ve test kurtarma
 
 Yerel Ollama modeliyle Türkçe sesli/yazılı asistan, kaynaklı hafıza ve test edilen otomatik kod geliştirme.
 
+- [V33.4 araştırma kuyruğu ve mimari denetimi](V33_4_ARASTIRMA_KUYRUGU.md)
 - [V33.3 yönlendirme düzeltmesi ve gerçek model denemesi](V33_3_SOHBET_VE_EYLEM_AYRIMI.md)
 - [V33.2 durum sorguları ve arka plan önceliği](V33_2_YAZILI_ONCELIK_VE_DURUM.md)
 - [V33.1 yazılı kullanım ve araştırma odağı](V33_1_ARASTIRMA_VE_CEKIRDEK.md)
@@ -25,6 +26,8 @@ V33.3 için `python -m unittest discover -s tests` ile 561 test geçti; atlanan 
 
 Ek olarak gerçek Qwen2.5-Coder-1.5B/llama.cpp CPU ile sekiz mesajlık yönlendirme denemesinde sekiz sohbet isteği, sıfır araç planı ve sıfır araç çalıştırma gözlendi. [Deneme kaydı](evaluations/v33_3_cpu_routing.json) doğal Türkçe veya doğruluk başarı puanı değildir; yanıtlar yer yer geneldir. Kullanıcının Windows/Qwen3:8B ortamı burada sınanmadı.
 
-V32.13 tabanında 510 test ayrıca ağsız Docker ortamında geçmişti. V33 için Docker testi bu çalışmada tekrarlanmadı.
+V32.13 tabanında 510 test ayrıca ağsız Docker ortamında geçmişti. V33.4 tam paketi ayrıca ağsız Docker içinde yeniden sınandı; güncel sonuç sürüm notlarında.
 
 Veritabanları, mikrofon/ses profilleri, kişisel kayıtlar, API anahtarları, model ağırlıkları ve sanal ortamlar kaynak dağıtımına dahil değildir. Bunlar mevcut bilgisayarda korunmalıdır. Model/yazılım lisansları ilgili paket belgelerindedir.
+
+V33.4 için 572 test normal Python ortamında ve ağsız Docker içinde geçti; atlanan yok. V33.4: araştırmaya devam etme komutu model planından ayrıldı; engellenmiş kod işleri ve üçüncü taslağın test ortamı düzeldikten sonra kurtarılması düzeltildi. Araştırmanın neden beklediği ve işleme hataları görünür. [Ayrıntılar](V33_4_ARASTIRMA_KUYRUGU.md).

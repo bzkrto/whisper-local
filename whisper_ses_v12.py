@@ -2807,6 +2807,8 @@ class WhisperBrain:
         background_web = WebSearch(self.memory, cfg)
         def background_search(query):
             background_web.search(query)
+            if getattr(background_web,'last_error',''):
+                raise RuntimeError(background_web.last_error[:240])
             return list(background_web.last_sources)
         self.autonomous_research = AutonomousResearch(self.research_memory, background_search)
         self._knowledge_context = []
@@ -3320,6 +3322,15 @@ class WhisperBrain:
             self.profile_interview.pending=None
         self._active_route = None
         folded = normalize_tr(command).rstrip('.!?')
+        from whisper.core.research_status import control_request
+        research_control=control_request(command)
+        if research_control:
+            result=self._agent_tool('research_control',{'action':research_control})
+            result.update(source='KAYNAK_SISTEM',route={'target':'research_control','reason':'Açık araştırma denetimi'})
+            if result['status']=='success':self.agent.clear_dialogue()
+            self.memory.save_interaction(command,result['response'])
+            self.voice.speak(result['response'])
+            return result
         if getattr(self, '_learning_summary_clarification', False):
             self._learning_summary_clarification = False
             if folded in ('evet', 'evet onu soruyorum', 'evet ogrendiklerini soruyorum'):
@@ -4076,7 +4087,9 @@ class WhisperBrain:
             self._select_role_model('chat')
             with background_inference(self,'knowledge',self.autonomous_research.stop_event) as cancelled:
                 outcome=self.knowledge_processor.tick(self.llm,cancelled)
-                if outcome:print(f"🧠 Bilgi işleme: {outcome['status']} | kaynak {outcome.get('source_id','')}")
+                if outcome:
+                    print(f"🧠 Bilgi işleme: {outcome['status']} | kaynak {outcome.get('source_id','')} | bölüm {outcome.get('part','')}")
+                    if outcome.get('detail'):print('Bilgi işleme açıklaması: '+str(outcome['detail'])[:240])
                 if cancelled.is_set() or self._foreground_waiting.is_set():return outcome
                 if hasattr(self,'profile_memory'):
                     self._background_phase='profile'

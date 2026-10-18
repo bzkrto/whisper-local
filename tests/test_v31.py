@@ -28,8 +28,8 @@ class ResearchIntentTests(unittest.TestCase):
         result,answer,start=self.ask('araştırma yapmaya devam et',model)
         self.assertEqual(result['status'],'success');self.assertTrue(self.brain.autonomous_research.enabled())
         answer.assert_not_called();start.assert_called_once()
-        self.assertEqual(result['steps'][0]['tool'],'research_control')
-        self.assertTrue(model.payloads[0]['knowledge_cards']);self.assertFalse(model.payloads[0]['research_state']['enabled'])
+        self.assertEqual(result['route']['target'],'research_control')
+        self.assertEqual(model.payloads,[])  # Explicit process control needs no model plan.
     def test_other_resume_phrases_use_semantic_control(self):
         for text in ('Kaldığın yerden araştırmayı sürdür','Arka planda öğrenmeye devam edebilirsin','Araştırmaya yeniden başla'):
             self.brain.autonomous_research.enable(False)

@@ -288,9 +288,11 @@ class AutonomousResearch:
                         self.enqueue(source['url'], topic[1])
                     except (ValueError, KeyError):
                         continue
+                with self.connect() as db:
+                    db.execute("DELETE FROM autonomous_settings WHERE key='last_search_error'")
             except Exception as exc:
                 with self.connect() as db:
-                    db.execute("INSERT OR REPLACE INTO autonomous_settings VALUES('last_search_error',?)", (type(exc).__name__,))
+                    db.execute("INSERT OR REPLACE INTO autonomous_settings VALUES('last_search_error',?)", ((type(exc).__name__+': '+str(exc))[:240],))
         if self.stop_event.is_set() or not self.enabled():
             return None
         with self.connect() as db:

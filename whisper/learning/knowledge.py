@@ -130,7 +130,7 @@ class KnowledgeProcessor:
             with self.connect() as db:
                 db.execute("UPDATE knowledge_chunks SET state='error',due=?,error=? WHERE source_id=? AND part=?",(self.clock()+1800,str(exc)[:240],sid,part))
                 db.execute("UPDATE knowledge_jobs SET state='error',due=?,error=? WHERE source_id=?",(self.clock()+1800,str(exc)[:240],sid))
-            return {'status':'error','source_id':sid,'detail':str(exc)[:240]}
+            return {'status':'error','source_id':sid,'part':part,'detail':str(exc)[:240]}
     def daily_summary(self,spoken=False):
         """Report today's processing separately from today's document downloads."""
         from datetime import datetime, timezone, timedelta
