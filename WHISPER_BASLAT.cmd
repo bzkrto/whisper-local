@@ -6,5 +6,5 @@ if not exist ".venv\Scripts\python.exe" (
     pause
     exit /b 1
 )
-".venv\Scripts\python.exe" "whisper_bootstrap.py"
+".venv\Scripts\python.exe" "whisper_bootstrap.py" --text
 if errorlevel 1 pause

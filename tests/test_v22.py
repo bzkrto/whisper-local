@@ -36,8 +36,10 @@ class KnowledgeTests(unittest.TestCase):
     def test_cancel_after_model_does_not_save_card(self):
         stop=threading.Event();value=self.model.chat.return_value
         self.model.chat.side_effect=lambda *a,**kw:(stop.set() or value)
-        self.assertEqual(self.processor.tick(self.model,stop)['status'],'error')
+        self.assertEqual(self.processor.tick(self.model,stop)['status'],'cancelled')
         self.assertEqual(self.processor.recall('kaynak hafıza'),[])
+        with self.processor.connect() as db:
+            self.assertEqual(db.execute('SELECT state,due FROM knowledge_chunks').fetchone(),('pending',0))
     def test_malformed_output_reported_not_promoted(self):
         self.model.chat.return_value='[]'
         self.assertEqual(self.processor.tick(self.model)['status'],'error')

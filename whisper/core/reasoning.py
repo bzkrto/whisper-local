@@ -17,15 +17,29 @@ class Route:
     role: str = 'chat'
 
 def conversational_turn(text):
-    """Only standalone social turns; mixed requests still use semantic planning."""
+    """Recognize text dialogue conservatively; this never grants tool authority.
+
+    Explicit actions win over conversation markers in mixed requests. Uncertain
+    commands continue through the existing semantic planner and validation.
+    """
     text = re.sub(r'[.!?,]+', ' ', fold(text))
     text = re.sub(r'\s+', ' ', text).strip()
-    return bool(re.fullmatch(
+    expand=re.fullmatch(r'(?:biraz|biraz daha|daha|bunu biraz|konuyu biraz) (?:acar misin|acabilir misin|aciklar misin|anlatir misin)',text)
+    if expand:return True
+    from .turn_routing import explicit_action
+    if explicit_action(text):return False
+    if re.fullmatch(
         r'(?:(?:hey )?whisper )?(?:merhaba|selam|selamlar|nasilsin|nasilsiniz|'
         r'ne haber|naber|ne yapiyorsun|neler yapiyorsun|ne yapiyorsunuz|'
         r'beni duyuyor musun|sesim geliyor mu|orada misin|tesekkur ederim|'
         r'tesekkurler|sag ol|gunaydin|iyi aksamlar|iyi geceler|'
-        r'seninle sohbet etmek istiyorum|biraz sohbet edelim)', text))
+        r'seninle sohbet etmek istiyorum|biraz sohbet edelim|peki|tamam|evet|hayir|anladim|anlamadim|olmadi|haklisin)', text):return True
+    if re.search(r'\b(?:bugun|yarin|duyurdu|guncel|haber\w*|fiyat\w*|hava|internette|internet|google|webde|kac tl|kac lira|dolar|euro|altin|bitcoin|skor|mac sonucu|bu hafta|son dakika)\b',text):return False
+    if re.search(r'\b(?:konus\w*|konu\w*|kastet\w*|duzelt\w*|karsilastir\w*|acikla\w*|ozetle\w*|anlat\w*|ornek|kisaca|daha kisa|ilgilen\w*|dusun\w*|hatirliyor\w*|donelim)\b',text):return True
+    # Source/research definitions retain the existing source-grounded route.
+    if re.search(r'\barastirma\b',text):return False
+    # A local backend is not a reason to turn arbitrary topic text into a plan.
+    return bool(text)
 
 class ReasoningRouter:
     """Decides the execution path; does not pretend to expose model thoughts."""

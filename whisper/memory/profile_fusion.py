@@ -52,6 +52,10 @@ class ProfileMemory:
                     db.execute('INSERT INTO profile_declaration_history VALUES(?,?,?,?,?)',(fact['slot'],fact['value'],fact['quote'],cid,self.clock()))
                 db.execute("UPDATE profile_extractions SET state='done',due=0,error='' WHERE conversation_id=?",(cid,))
             return {'status':'processed','facts':len(data['facts']),'conversation_id':cid}
+        except InterruptedError as exc:
+            with self.connect() as db:
+                db.execute("UPDATE profile_extractions SET state='pending',due=0,error='' WHERE conversation_id=?",(cid,))
+            return {'status':'cancelled','detail':str(exc)[:240]}
         except Exception as exc:
             with self.connect() as db:db.execute("UPDATE profile_extractions SET state='error',due=?,error=? WHERE conversation_id=?",(self.clock()+1800,str(exc)[:240],cid))
             return {'status':'error','detail':str(exc)[:240]}

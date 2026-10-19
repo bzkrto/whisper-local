@@ -31,7 +31,8 @@ def local_model(model):
 def candidate(text):
     """Domain routing, not a separate rule for every command phrase."""
     t = fold(text)
-    return bool(re.search(r'\b(?:ac|cal|dinle|baslat|calistir|hazirla|getir|ayarla|kaydet|olustur|goster|donustur|aktar|arastir|oku|ogren|izle|takip|not al|bir de|orada|onu)\b', t))
+    from .turn_routing import explicit_action
+    return explicit_action(t) or bool(re.search(r'\b(?:dinle|bir de|orada|onu)\b',t))
 
 def validate_plan(data, apps):
     if not isinstance(data, dict) or set(data) != {'kind', 'message', 'steps'}:
@@ -131,6 +132,12 @@ class ActionAgent:
         self.awaiting = False
         self.dialogue.clear()
 
+    def current_dialogue(self):
+        previous=self.dialogue.pending
+        current=self.dialogue.get()
+        if previous is not None and current is None:self.awaiting=False
+        return current
+
     def ask_followup(self, request, question):
         self.awaiting = True
         self.dialogue.ask(request, question)
@@ -150,7 +157,7 @@ class ActionAgent:
         if not local_model(model):
             return self.result('Araç planlama için yerel Ollama veya LM Studio bağlantısı gerekiyor.', 'blocked')
         stop = cancelled or self.cancelled
-        pending = self.dialogue.get()
+        pending = self.current_dialogue()
         if fold(command).strip().rstrip('.!?') in ('vazgec', 'iptal', 'iptal et', 'bosver', 'hayir') and pending:
             self.clear_dialogue()
             return self.result('Bekleyen isteği iptal ettim.', 'cancelled')
@@ -242,7 +249,8 @@ class ActionAgent:
                 if native:
                     from .semantic_plan import PLAN_SCHEMA, parse_semantic_plan
                     raw = model.chat_json(prompt + ' Ayrıca intent, entities ve missing_fields çıkar. '
-                        'entities, type ve value alanları olan varlıklardır. Eksik alanlar isteği gerçekten engelliyorsa clarification seç.',
+                        'entities, type ve value alanları olan varlıklardır. intent 1–80, entity type 1–50, value 1–200, missing_fields maddeleri 1–100, message en fazla 400 karakterdir. '
+                        'Eksik alanlar isteği gerçekten engelliyorsa clarification seç.',
                         repair_request, PLAN_SCHEMA, max_tokens=1400)
                 else:
                     raw = model.chat(prompt, repair_request, max_tokens=700)

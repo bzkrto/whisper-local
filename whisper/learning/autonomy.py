@@ -288,9 +288,11 @@ class AutonomousResearch:
                         self.enqueue(source['url'], topic[1])
                     except (ValueError, KeyError):
                         continue
+                with self.connect() as db:
+                    db.execute("DELETE FROM autonomous_settings WHERE key='last_search_error'")
             except Exception as exc:
                 with self.connect() as db:
-                    db.execute("INSERT OR REPLACE INTO autonomous_settings VALUES('last_search_error',?)", (type(exc).__name__,))
+                    db.execute("INSERT OR REPLACE INTO autonomous_settings VALUES('last_search_error',?)", ((type(exc).__name__+': '+str(exc))[:240],))
         if self.stop_event.is_set() or not self.enabled():
             return None
         with self.connect() as db:
@@ -375,7 +377,7 @@ class AutonomousResearch:
                 f'. Döngü aralığı: {interval} saniye. Kaynak başlıklarından keşfedilen konu: {discoveries}. Konular: ' + ', '.join(topics) + '\n' +
                 '\n'.join(f'{s} | kayıt {i} | {u} | {d}' for s, u, i, d in rows) +
                 ('\nSon arama hatası: ' + error[0] if error else '') +
-                f'\nAraştırma profili: {profile}. development profilinde 10 turun 8’i Türkçe bağlam, bilgi işleme, ajan ve derin öğrenmeye ayrılır (uygun kaynak varsa); 2 tur genel keşiftir. Siber güvenlikte resmî teknik kaynaklar kullanılır. Kayıtlı metinler bağımsız doğrulama değildir.')
+                f'\nAraştırma profili: {profile}. development profilinde 10 turun 8’i Türkçe bağlam, mantıksal tutarlılık, bilgi işleme, ajan ve derin öğrenmeye ayrılır (uygun kaynak varsa); 2 tur genel keşiftir. Siber güvenlikte resmî teknik kaynaklar kullanılır. Kayıtlı metinler bağımsız doğrulama değildir.')
 
     def set_profile(self, profile):
         if profile not in ('balanced','security','development'):

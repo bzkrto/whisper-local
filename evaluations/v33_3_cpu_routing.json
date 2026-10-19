@@ -1,0 +1,106 @@
+{
+  "model": "qwen-coder",
+  "backend": "llamacpp",
+  "responses": "real local HTTP",
+  "routing_passed": true,
+  "quality_scored": false,
+  "host_tool_execution": false,
+  "calls": {
+    "chat": 8,
+    "plan": 0,
+    "tools": 0
+  },
+  "turns": [
+    {
+      "state": "fresh",
+      "user": "nasılsın",
+      "status": "success",
+      "route": {
+        "target": "llm",
+        "reason": "Bağlamlı sohbet veya metin takibi",
+        "role": "chat"
+      },
+      "response": "İyiyim, teşekkür ederim. Size nasıl yardımcı olabilirim?"
+    },
+    {
+      "state": "followup",
+      "user": "siber güvenlik",
+      "status": "success",
+      "route": {
+        "target": "llm",
+        "reason": "Bağlamlı sohbet veya metin takibi",
+        "role": "chat"
+      },
+      "response": "Siber güvenlik konusunda yardımcı olabilirim. Size nasıl yardımcı olabilirim?"
+    },
+    {
+      "state": "pending",
+      "user": "nasılsın",
+      "status": "success",
+      "route": {
+        "target": "llm",
+        "reason": "Bağlamlı sohbet veya metin takibi",
+        "role": "chat"
+      },
+      "response": "İyiyim, teşekkür ederim. Size nasıl yardımcı olabilirim?"
+    },
+    {
+      "state": "followup",
+      "user": "siber güvenlik",
+      "status": "success",
+      "route": {
+        "target": "llm",
+        "reason": "Bağlamlı sohbet veya metin takibi",
+        "role": "chat"
+      },
+      "response": "Siber güvenlik konusunda yardımcı olabilirim. Size nasıl yardımcı olabilirim?"
+    },
+    {
+      "state": "pending",
+      "user": "nasilssin",
+      "status": "success",
+      "route": {
+        "target": "llm",
+        "reason": "Bağlamlı sohbet veya metin takibi",
+        "role": "chat"
+      },
+      "response": "İyiyim, teşekkür ederim. Size nasıl yardımcı olabilirim?"
+    },
+    {
+      "state": "expired",
+      "user": "siber güvenlik",
+      "status": "success",
+      "route": {
+        "target": "llm",
+        "reason": "Bağlamlı sohbet veya metin takibi",
+        "role": "chat"
+      },
+      "response": "Siber güvenlik konusunda yardımcı olabilirim. Size nasıl yardımcı olabilirim?"
+    },
+    {
+      "state": "profile",
+      "user": "nasılsın",
+      "status": "success",
+      "route": {
+        "target": "llm",
+        "reason": "Bağlamlı sohbet veya metin takibi",
+        "role": "chat"
+      },
+      "response": "İyiyim, teşekkür ederim. Size nasıl yardımcı olabilirim?"
+    },
+    {
+      "state": "followup",
+      "user": "hayır, konuyu değiştirelim: mantıksal tutarlılık",
+      "status": "success",
+      "route": {
+        "target": "llm",
+        "reason": "Bağlamlı sohbet veya metin takibi",
+        "role": "chat"
+      },
+      "response": "Mantıksal tutarlılık konusunda nasıl yardımcı olabilirim?"
+    }
+  ],
+  "actual_model": "Qwen2.5-Coder-1.5B Instruct Q4_K_M",
+  "platform": "Linux CPU",
+  "scope": "Routing evidence only; not a natural Turkish or factual accuracy benchmark."
+}

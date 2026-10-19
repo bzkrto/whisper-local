@@ -60,16 +60,21 @@ class KnowledgeProcessor:
                 query=query.replace('SELECT source_id,part,body FROM knowledge_chunks',
                     'SELECT source_id,part,knowledge_chunks.body FROM knowledge_chunks JOIN research_sources ON research_sources.id=source_id')
                 order="CASE WHEN lower(research_sources.query) LIKE '%security%' OR lower(research_sources.query) LIKE '%siber%' OR lower(research_sources.query) LIKE '%owasp%' OR lower(research_sources.query) LIKE '%nist%' THEN 0 ELSE 1 END,source_id,part"
-            else:order='source_id,part'
-            rows=db.execute(query+' ORDER BY '+order+' LIMIT 500',params).fetchall()
-            if source_ids is None and profile and profile[0]=='development':
+            elif source_ids is None and profile and profile[0]=='development':
                 from .priorities import target,track
                 number=db.execute("SELECT value FROM knowledge_schedule WHERE key='processing_turn'").fetchone()[0]
                 wanted=target(number)
-                titles=dict(db.execute('SELECT id,query FROM research_sources'))
-                if wanted!='general':rows.sort(key=lambda x:track(titles.get(x[0],''))!=wanted)
-                if rows:db.execute("UPDATE knowledge_schedule SET value=value+1 WHERE key='processing_turn'")
-            row=rows[0] if rows else None
+                # Rank all eligible sources before LIMIT. A small result window
+                # must not hide a relevant topic behind hundreds of old chunks.
+                db.create_function('research_track',1,track,deterministic=True)
+                query=query.replace('SELECT source_id,part,body FROM knowledge_chunks',
+                    'SELECT source_id,part,knowledge_chunks.body FROM knowledge_chunks JOIN research_sources ON research_sources.id=source_id')
+                order='CASE WHEN research_track(research_sources.query)=? THEN 0 ELSE 1 END,source_id,part'
+                params.append(wanted)
+            else:order='source_id,part'
+            row=db.execute(query+' ORDER BY '+order+' LIMIT 1',params).fetchone()
+            if row and source_ids is None and profile and profile[0]=='development':
+                db.execute("UPDATE knowledge_schedule SET value=value+1 WHERE key='processing_turn'")
             if not row:return None
             sid,part,body=row
             db.execute("UPDATE knowledge_chunks SET state='running',due=? WHERE source_id=? AND part=?",(self.clock()+1800,sid,part))
@@ -88,7 +93,7 @@ class KnowledgeProcessor:
                     'Özet 20–1200 karakter, kavramlar en fazla 8, iddialar en fazla 4. Her alıntı 20–300 karakter. '
                     'Yalnız verilen bölümü kullan; bu bir doğruluk veya beceri sınaması değildir.',
                     json.dumps({'source_id':sid,'part':part,'excerpt':excerpt},ensure_ascii=False),max_tokens=1800)
-                if cancelled and cancelled.is_set():raise ValueError('İşleme iptal edildi.')
+                if cancelled and cancelled.is_set():raise InterruptedError('İşleme iptal edildi.')
                 from ..core.structured import parse_object
                 data=parse_object(raw)
                 if not isinstance(data,dict) or set(data) not in ({'summary','concepts','claims'},{'summary','concepts','claims','applications'}) or not isinstance(data['summary'],str) or not 20<=len(data['summary'])<=1200:
@@ -116,11 +121,16 @@ class KnowledgeProcessor:
                 remaining=db.execute("SELECT count(*) FROM knowledge_chunks WHERE source_id=? AND state!='done'",(sid,)).fetchone()[0]
                 db.execute("UPDATE knowledge_jobs SET state=?,error='' WHERE source_id=?",('pending' if remaining else 'done',sid))
             return {'status':'processed','source_id':sid,'part':part,'remaining_parts':remaining}
+        except InterruptedError as exc:
+            with self.connect() as db:
+                db.execute("UPDATE knowledge_chunks SET state='pending',due=0,error='' WHERE source_id=? AND part=?",(sid,part))
+                db.execute("UPDATE knowledge_jobs SET state='pending',due=0,error='' WHERE source_id=?",(sid,))
+            return {'status':'cancelled','source_id':sid,'detail':str(exc)[:240]}
         except Exception as exc:
             with self.connect() as db:
                 db.execute("UPDATE knowledge_chunks SET state='error',due=?,error=? WHERE source_id=? AND part=?",(self.clock()+1800,str(exc)[:240],sid,part))
                 db.execute("UPDATE knowledge_jobs SET state='error',due=?,error=? WHERE source_id=?",(self.clock()+1800,str(exc)[:240],sid))
-            return {'status':'error','source_id':sid,'detail':str(exc)[:240]}
+            return {'status':'error','source_id':sid,'part':part,'detail':str(exc)[:240]}
     def daily_summary(self,spoken=False):
         """Report today's processing separately from today's document downloads."""
         from datetime import datetime, timezone, timedelta

@@ -1,8 +1,13 @@
-# Whisper Astra — V32.13
+# Whisper Astra — V33.4 araştırma kuyruğu ve test kurtarma
 
 Yerel Ollama modeliyle Türkçe sesli/yazılı asistan, kaynaklı hafıza ve test edilen otomatik kod geliştirme.
 
-- [Windows güncellemesi ve sürüm notları](https://github.com/bzkrto/whisper-local/releases/tag/v32.13-astra)
+- [V33.4 araştırma kuyruğu ve mimari denetimi](V33_4_ARASTIRMA_KUYRUGU.md)
+- [V33.3 yönlendirme düzeltmesi ve gerçek model denemesi](V33_3_SOHBET_VE_EYLEM_AYRIMI.md)
+- [V33.2 durum sorguları ve arka plan önceliği](V33_2_YAZILI_ONCELIK_VE_DURUM.md)
+- [V33.1 yazılı kullanım ve araştırma odağı](V33_1_ARASTIRMA_VE_CEKIRDEK.md)
+- [V33 diyalog ve bağlam değişiklikleri](V33_DIYALOG_VE_BAGLAM.md)
+- [V32.13 Windows güncellemesi ve sürüm notları](https://github.com/bzkrto/whisper-local/releases/tag/v32.13-astra)
 - [Başlatma adımları](BASLATMA.txt)
 - [Kurulum](WHISPER_KURULUM.md)
 - [Araştırma ve otomatik kod geliştirme rehberi](V32_13_GELISIM_REHBERI.md)
@@ -10,13 +15,19 @@ Yerel Ollama modeliyle Türkçe sesli/yazılı asistan, kaynaklı hafıza ve tes
 
 ## Kullanım
 
-Mevcut kurulumda normal kullanım `WHISPER_BASLAT.cmd` ile açılır.
+Normal kullanım `WHISPER_BASLAT.cmd` ile yazılı sohbet arayüzünü açar. Mikrofon, STT ve TTS modeli yüklenmez. Sesli geliştirme askıdadır.
 Geliştirme için normal Whisper penceresini kapatın; Docker Desktop (Linux konteynerleri) ve Ollama açıkken `WHISPER_GELISIM_BASLAT.cmd` çalıştırın. Eski/eksik Docker test imajı ilk çalıştırmada internetten hazırlanır.
 
 Geliştirme modu ses/STT yüklemeden tek kurulu yerel modelle çalışır. Siber güvenlik kaynaklarını önceliklendirir; kaynaklı taslağı ayrı kopyada oluşturur, Docker testleri geçerse yedekli uygular ve yeni süreçle devam eder. Gerçek ilerleme `WHISPER_GELISIM_RAPORU.json` dosyasına yazılır. Kaynak hafızası ve uygulama kodu gelişir; model ağırlıkları eğitilmez.
 
 ## Doğrulama
 
-510 test normal Python ortamında ve ağsız, salt okunur, ayrı kullanıcıyla 2 CPU/2 GB RAM altında çalışan Docker konteynerinde geçti. Küçük ayrı projede gerçek yerel kod modeliyle taslak, test ve yedekli uygulama doğrulandı. Windows/GPU hızı bu CPU bulutunda ölçülmedi.
+V33.3 için `python -m unittest discover -s tests` ile 561 test geçti; atlanan yok. Yeni 13 test; konu adlarının sohbet olması, eski/bitmiş soruların yeni konuşmayı ele geçirmemesi, geçerli kısa yanıtların araç sorusunu tamamlaması ve bozuk planın reddini kapsar. Üç ayrı 20 turlu diyalog testi bulunur.
+
+Ek olarak gerçek Qwen2.5-Coder-1.5B/llama.cpp CPU ile sekiz mesajlık yönlendirme denemesinde sekiz sohbet isteği, sıfır araç planı ve sıfır araç çalıştırma gözlendi. [Deneme kaydı](evaluations/v33_3_cpu_routing.json) doğal Türkçe veya doğruluk başarı puanı değildir; yanıtlar yer yer geneldir. Kullanıcının Windows/Qwen3:8B ortamı burada sınanmadı.
+
+V32.13 tabanında 510 test ayrıca ağsız Docker ortamında geçmişti. V33.4 tam paketi ayrıca ağsız Docker içinde yeniden sınandı; güncel sonuç sürüm notlarında.
 
 Veritabanları, mikrofon/ses profilleri, kişisel kayıtlar, API anahtarları, model ağırlıkları ve sanal ortamlar kaynak dağıtımına dahil değildir. Bunlar mevcut bilgisayarda korunmalıdır. Model/yazılım lisansları ilgili paket belgelerindedir.
+
+V33.4 için 572 test normal Python ortamında ve ağsız Docker içinde geçti; atlanan yok. V33.4: araştırmaya devam etme komutu model planından ayrıldı; engellenmiş kod işleri ve üçüncü taslağın test ortamı düzeldikten sonra kurtarılması düzeltildi. Araştırmanın neden beklediği ve işleme hataları görünür. [Ayrıntılar](V33_4_ARASTIRMA_KUYRUGU.md).

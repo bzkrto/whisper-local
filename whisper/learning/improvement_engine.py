@@ -178,13 +178,16 @@ class ImprovementEngine:
         transcript = output.stdout + output.stderr
         count = re.search(r'Ran (\d+) tests? in ', transcript)
         executed = int(count[1]) if count else 0
-        status = 'passed' if output.returncode == 0 and executed > 0 and re.search(r'^OK\s*$', transcript, re.M) else 'failed'
+        # Docker 125 means the container never started (missing image/daemon,
+        # mount or runtime failure), not a failed candidate implementation.
+        status = ('blocked' if output.returncode == 125 else
+                  'passed' if output.returncode == 0 and executed > 0 and re.search(r'^OK\s*$', transcript, re.M) else 'failed')
         manifest['test_status'] = status
         manifest['tests_executed'] = executed
         manifest['tested_hashes'] = dict(manifest['hashes']) if status == 'passed' else {}
         manifest['test_output'] = transcript[-12000:]
         (destination / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')
-        return {'status': 'success' if status == 'passed' else 'error',
+        return {'status': 'success' if status == 'passed' else 'blocked' if status == 'blocked' else 'error',
                 'response': f'Taslak {proposal_id}: test {status}. Çalışan kod değiştirilmedi.\n'+manifest['test_output'], 'proposal_id': proposal_id}
 
     @staticmethod
